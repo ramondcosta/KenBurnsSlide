@@ -1,0 +1,159 @@
+<html>
+
+	<head>
+		<title>MATA65 - Computacao Grafica</title>
+		<h1>Imagem Digital.</h1>
+		<h3>Composicao de Shaders em Three.JS.</h3>
+	</head>
+
+	<script id="rgb-vs" type="x-shader/x-vertex">
+
+		varying vec2 vUv;
+		varying vec3 newPos;
+		uniform float t;
+		uniform float zoom;
+
+		void main(void) {
+			vUv = uv;
+			newPos.y = position.y*zoom;
+			newPos.x = position.x*zoom + t;
+			newPos.z = position.z*zoom;
+			gl_Position = projectionMatrix * modelViewMatrix * vec4(newPos, 1.0);
+			// gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+		}
+	</script>
+
+	<script id="gray-fs" type="x-shader/x-fragment">
+		precision mediump float;
+
+		uniform vec3 uChannel;
+		uniform sampler2D tOne;
+		uniform sampler2D tTwo;
+		uniform sampler2D tCameraman;
+		uniform sampler2D tMandrill;
+		uniform sampler2D tChapa;
+		uniform float fade;
+		uniform float fade2;
+		uniform float fade3;
+		uniform float fade4;
+		uniform float fade5;
+		varying vec2 vUv;
+		float mean;
+
+
+		void main(void) {
+			// vec4 c = texture2D(tDiffuse, vUv);
+			vec4 c1;
+			vec4 c2;
+			vec4 c3;
+			vec4 c4;
+			vec4 c5;
+			vec4 final;
+			c1 = texture2D(tOne, vUv);
+			c2 = texture2D(tTwo, vUv);
+			c3 = texture2D(tCameraman, vUv);
+			c4 = texture2D(tMandrill, vUv);
+			c5 = texture2D(tChapa, vUv);
+
+			float red1 = c1.r*fade;
+			float green1 = c1.g*fade;
+			float blue1 = c1.b*fade;
+
+			float red2 = c2.r*fade2;
+			float green2 = c2.g*fade2;
+			float blue2 = c2.b*fade2;
+
+			float red3 = c3.r*fade3;
+			float green3 = c3.g*fade3;
+			float blue3 = c3.b*fade3;
+
+			float red4 = c4.r*fade4;
+			float green4 = c4.g*fade4;
+			float blue4 = c4.b*fade4;
+
+			float red5 = c5.r*fade5;
+			float green5 = c5.g*fade5;
+			float blue5 = c5.b*fade5;
+
+			// float red2 = c2.r*((1.0 - fade));
+			// float green2 = c2.g*((1.0 - fade));
+			// float blue2 = c2.b*((1.0 - fade));
+
+			// gl_FragColor = vec4(red1 + red2, green1 + green2 , blue1 + blue2,1.0);
+			gl_FragColor = vec4(red1 + red2 + red3 + red4 + red5,
+								green1 + green2 + green3 + green4 + green5,
+								blue1 + blue2 + blue3 + blue4 + blue5, 1.0);
+			// gl_FragColor = vec4(mix( c2.xyz, c1.xyz, 1.0 ), 1.0);
+			// gl_FragColor = vec4(c1.r*fade/4.0 + (c2.r*(1.0-fade))/4.0
+			// 					, c1.g*fade/4.0 + (c2.g*(1.0-fade))/4.0
+			// 					, c1.b*fade/4.0 + (c2.b*(1.0-fade))/4.0, c1.a);
+			// gl_FragColor = vec4((c2.r*(1.0-fade))/2.0
+			// 					, (c2.g*(1.0-fade))/2.0
+			// 					, (c2.b*(1.0-fade))/2.0, c2.a);
+			// gl_FragColor += vec4(  c1.r*fade/2.0
+			// 					, c1.g*fade/2.0
+			// 					, c1.b*fade/2.0, 1.0);
+			// gl_FragColor += vec4(  c1.r*fade/2.0
+			// 					, c1.g*fade/2.0
+			// 					, c1.b*fade/2.0, 1.0);
+
+
+			// gl_FragColor = vec4(c1.r*fade, c1.g*fade, c1.b*fade, c1.a);
+
+			// gl_FragColor = vec4(c.r*uChannel.r, c.g*uChannel.g, c.b*uChannel.b, c.a);
+		}
+	</script>
+	<script id="smooth-fs" type="x-shader/x-fragment">
+		precision mediump float;
+
+		uniform vec3 uChannel;
+		uniform sampler2D tDiffuse;
+		uniform sampler2D tOne;
+
+		varying vec2 vUv;
+		float mean;
+
+		void main(void) {
+			// vec4 c = texture2D(tDiffuse, vUv);
+			vec4 c = texture2D(tOne, vUv);
+			mean = (c.r + c.g + c.b)/3.0;
+			gl_FragColor = vec4(mean, mean, mean, c.a);
+
+			// gl_FragColor = vec4(c.r*uChannel.r, c.g*uChannel.g, c.b*uChannel.b, c.a);
+		}
+	</script>
+
+	<script id="rgb-fs" type="x-shader/x-fragment">
+		precision mediump float;
+
+		uniform vec3 uChannel;
+		uniform sampler2D tDiffuse;
+		uniform sampler2D tOne;
+
+		varying vec2 vUv;
+		float mean;
+
+		void main(void) {
+			vec4 c = texture2D(tOne, vUv);
+			// vec4 c = texture2D(tDiffuse, vUv);
+			// mean = (c.r + c.g + c.b)/3.0;
+			// gl_FragColor = vec4(mean, mean, mean, c.a);
+
+
+			gl_FragColor = vec4(c.r*uChannel.r, c.g*uChannel.g, c.b*uChannel.b, c.a);
+		}
+	</script>
+
+	<script type="text/javascript" src="./libs/three.js"></script>
+	<script type="text/javascript" src="./libs/examples/js/libs/dat.gui.min.js"></script>
+    <script type="text/javascript" src="./libs/examples/js/shaders/CopyShader.js"></script>
+    <script type="text/javascript" src="./libs/examples/js/postprocessing/EffectComposer.js"></script>
+    <script type="text/javascript" src="./libs/examples/js/postprocessing/ShaderPass.js"></script>
+    <script type="text/javascript" src="./libs/examples/js/postprocessing/MaskPass.js"></script>
+    <script type="text/javascript" src="./libs/examples/js/postprocessing/RenderPass.js"></script>
+	<script type="text/javascript" src="Compose.js"></script>
+
+	<body onload="init();">
+		<div id="WebGL-output" ></div>
+	</body>
+</html>
